@@ -1,33 +1,35 @@
 import matplotlib.pyplot as plt
 import numpy as np
-dens_water=1000 #KG/M^3
-dens_air_init=1.225 #KG/M^3
-air_spec_gas_constant=287.058
-drag_coeff=0.57
-bub_radius_init=0.03 #M
-g=9.80665 #M/S^2
+dens_water=1000 #Density of water, KG/M^3
+dens_air_init=1.225 #Initial uncompressed density of air, KG/M^3
+air_spec_gas_constant=287.058 #Specific gas constant of air
+drag_coeff=0.57 #Drag coefficient of a sphere
+bub_radius_init=0.03 #Initial bubble radius #M
+g=9.80665 #Gravitational acceleration, M/S^2
 temperature=25 #C
-tank_depth=100
-period=0.0001 #Smaller --> more accurate
-print("Reciprocal of Period: "+str(1/period)) 
+tank_depth=100 #M
+period=0.0001 #Iterative period, Smaller --> more accurate
+print("Reciprocal of Period: "+str(1/period))
 
 plt.style.use('dark_background')
 
 #CALC STUFF
-temp=temperature+273.15
-bub_v_init=(4/3)*np.pi*(bub_radius_init**3)
-bub_m_init=dens_air_init*bub_v_init
-p=(dens_water*g*tank_depth)
-dens_air_bottom=p/(air_spec_gas_constant*temp)
+temp=temperature+273.15 #Calculate temperature in K
+bub_v_init=(4/3)*np.pi*(bub_radius_init**3) ##calculate initial bubble volume
+bub_m_init=dens_air_init*bub_v_init #Calculate initial bubble mass
+p=(dens_water*g*tank_depth) #Calculate pressure at bottom
+dens_air_bottom=p/(air_spec_gas_constant*temp)#Density of air at the bottom of the tank
 
-hs=[]
-drs=[]
-ds=[]
-ts=[]
-rs=[]
-fs=[]
-vs=[]
-bs=[]
+#Initialize some arrays
+hs=[] #Height
+drs=[] #Drag force
+ds=[] #Air density
+ts=[] #Time
+rs=[] #Radius
+fs=[] #Bubble acceleration
+vs=[] #Velocity
+bs=[] #Buoyancy force
+#Extract sign of a value
 def sign(a):
     if a<0:
         f=-1
@@ -36,7 +38,9 @@ def sign(a):
     if a==0:
         f=0
     return f
+#Main function:
 def main():
+    #Initialize some variables
     h=0
     v=0
     t=0
@@ -45,8 +49,9 @@ def main():
     bub_radius=bub_radius_init
     bub_acc=0
     buoyancy=0
-    
+    #While bubble is submerged:
     while h<tank_depth:
+        #Write data to lists
         hs.append(h)
         drs.append(drag)
         ds.append(dens_air)
@@ -71,11 +76,11 @@ def main():
         delta_v=bub_acc*period
 
         if delta_h < 0:
-            print("DELTA H < 0 AT TIME: "+str(t))
-            print("VAR DUMP:")
+            print("DELTA H < 0 AT TIME: "+str(t)) #Bubble is going down
+            print("VAR DUMP:") #Dump variables
             print("  Velocity: "+str(v+delta_v))
             if(v+delta_v > 3e8):
-                print("First object to break light speed!")
+                print("First object to break light speed!") #Joke message if greater than lightspeed
             print("  Bubble Total Force: "+str(total_force))
             print("  Total Force Breakdown:")
             print("    Buoyancy Force: "+str(buoyancy))
@@ -84,16 +89,16 @@ def main():
             print("  Air Density at "+str(depth)+" Meters: "+str(dens_air))
             print("  Pressure at "+str(depth)+" Meters: "+str(p))
             quit()
-
+        #Update time, height, and velocity
         t+=period
         h+=delta_h
         v+=delta_v
 print("Definitions done, running main loop...")
-main()
+main() #Run main
 print("Finshed. Length of data was "+str(len(hs)))
 
 print("Starting postprocessing...")
-
+#Convert the data to np array
 hsa=np.array(hs)
 drsa=np.array(drs)
 dsa=np.array(ds)
@@ -103,6 +108,7 @@ fsa=np.array(fs)
 vsa=np.array(vs)
 bsa=np.array(bs)
 
+#Display the plots
 fig=plt.figure()
 fig.suptitle('Height / Time')
 plt.xlim(0,max(tsa))
